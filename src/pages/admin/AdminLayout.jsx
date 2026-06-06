@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -9,113 +15,219 @@ import {
   ShoppingCart,
   Package,
   LogOut,
+  ChevronDown,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const [openProducts, setOpenProducts] = useState(false);
+  const location = useLocation();
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [openProducts, setOpenProducts] = useState(true);
 
   const logout = () => {
     localStorage.clear();
-    navigate("/login");
+    navigate("/");
   };
 
-  const linkClass = ({ isActive }) =>
-    isActive
-      ? "bg-white text-black p-2 rounded flex items-center gap-2"
-      : "p-2 hover:bg-gray-800 rounded flex items-center gap-2 text-gray-200";
+  const isProductRoute =
+    location.pathname.startsWith("/admin/products");
 
   return (
-    <div className="flex h-screen">
-
+    <div className="flex h-screen bg-slate-100">
       {/* SIDEBAR */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-
+      <aside
+        className={`
+          bg-slate-900 text-white flex flex-col
+          transition-all duration-300 shadow-xl
+          ${sidebarCollapsed ? "w-20" : "w-64"}
+        `}
+      >
         {/* HEADER */}
-        <div className="p-4 text-xl font-bold border-b border-gray-700">
-          🛒 Admin Panel
+        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+          {!sidebarCollapsed && (
+            <h1 className="text-lg font-bold">
+              🛒 Admin Panel
+            </h1>
+          )}
+
+          <button
+            onClick={() =>
+              setSidebarCollapsed(!sidebarCollapsed)
+            }
+            className="p-2 rounded hover:bg-slate-800"
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen size={20} />
+            ) : (
+              <PanelLeftClose size={20} />
+            )}
+          </button>
         </div>
 
         {/* MENU */}
-        <nav className="flex flex-col p-2 gap-1">
-
-          {/* DASHBOARD */}
-          <NavLink to="/admin" end className={linkClass}>
-            <LayoutDashboard size={18} />
-            Dashboard
+        <nav className="flex-1 p-3 space-y-2">
+          {/* Dashboard */}
+          <NavLink
+            to="/admin"
+            end
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-3 rounded-lg transition-all
+              ${
+                isActive
+                  ? "bg-white text-black"
+                  : "hover:bg-slate-800 text-slate-200"
+              }`
+            }
+          >
+            <LayoutDashboard size={20} />
+            {!sidebarCollapsed && <span>Dashboard</span>}
           </NavLink>
 
-          {/* PRODUCTS DROPDOWN */}
-          <div className="flex flex-col">
+          {/* Products */}
+          <button
+            onClick={() => setOpenProducts(!openProducts)}
+            className={`w-full flex items-center px-3 py-3 rounded-lg transition-all
+            ${
+              isProductRoute
+                ? "bg-slate-800"
+                : "hover:bg-slate-800"
+            }`}
+          >
+            <ShoppingBag size={20} />
 
-            <button
-              onClick={() => setOpenProducts(!openProducts)}
-              className="p-2 hover:bg-gray-800 rounded flex items-center gap-2 w-full text-left text-gray-200"
-            >
-              <ShoppingBag size={18} />
-              Products
-              <span className="ml-auto text-xs">
-                {openProducts ? "▲" : "▼"}
-              </span>
-            </button>
+            {!sidebarCollapsed && (
+              <>
+                <span className="ml-3">
+                  Products
+                </span>
 
-            {openProducts && (
-              <div className="ml-6 flex flex-col gap-1 mt-1">
-
-                <NavLink to="/admin/products" className={linkClass}>
-                  <List size={16} />
-                  View Products
-                </NavLink>
-
-                <NavLink to="/admin/products/add" className={linkClass}>
-                  <Plus size={16} />
-                  Add Product
-                </NavLink>
-
-              </div>
+                <span className="ml-auto">
+                  {openProducts ? (
+                    <ChevronDown size={16} />
+                  ) : (
+                    <ChevronRight size={16} />
+                  )}
+                </span>
+              </>
             )}
-          </div>
+          </button>
 
-          {/* CATEGORIES */}
-          <NavLink to="/admin/categories" className={linkClass}>
-            <Tags size={18} />
-            Categories
+          {/* Product Submenu */}
+          {!sidebarCollapsed && openProducts && (
+            <div className="ml-6 flex flex-col gap-1">
+              <NavLink
+                to="/admin/products"
+                end
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                  ${
+                    isActive
+                      ? "bg-white text-black"
+                      : "hover:bg-slate-800 text-slate-300"
+                  }`
+                }
+              >
+                <List size={16} />
+                View Products
+              </NavLink>
+
+              <NavLink
+                to="/admin/products/add"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                  ${
+                    isActive
+                      ? "bg-white text-black"
+                      : "hover:bg-slate-800 text-slate-300"
+                  }`
+                }
+              >
+                <Plus size={16} />
+                Add Product
+              </NavLink>
+            </div>
+          )}
+
+          {/* Categories */}
+          <NavLink
+            to="/admin/categories"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-3 rounded-lg transition-all
+              ${
+                isActive
+                  ? "bg-white text-black"
+                  : "hover:bg-slate-800 text-slate-200"
+              }`
+            }
+          >
+            <Tags size={20} />
+            {!sidebarCollapsed && (
+              <span>Categories</span>
+            )}
           </NavLink>
 
-          {/* ORDERS */}
-          <NavLink to="/admin/orders" className={linkClass}>
-            <ShoppingCart size={18} />
-            Orders
+          {/* Orders */}
+          <NavLink
+            to="/admin/orders"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-3 rounded-lg transition-all
+              ${
+                isActive
+                  ? "bg-white text-black"
+                  : "hover:bg-slate-800 text-slate-200"
+              }`
+            }
+          >
+            <ShoppingCart size={20} />
+            {!sidebarCollapsed && (
+              <span>Orders</span>
+            )}
           </NavLink>
 
-          {/* BOXES */}
-          <NavLink to="/admin/boxes" className={linkClass}>
-            <Package size={18} />
-            Boxes
+          {/* Boxes */}
+          <NavLink
+            to="/admin/boxes"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-3 rounded-lg transition-all
+              ${
+                isActive
+                  ? "bg-white text-black"
+                  : "hover:bg-slate-800 text-slate-200"
+              }`
+            }
+          >
+            <Package size={20} />
+            {!sidebarCollapsed && (
+              <span>Boxes</span>
+            )}
           </NavLink>
-
         </nav>
 
         {/* LOGOUT */}
-        <div className="mt-auto p-3 border-t border-gray-700">
+        <div className="p-3 border-t border-slate-700">
           <Button
             onClick={logout}
             className="w-full bg-red-500 hover:bg-red-600 flex items-center gap-2"
           >
             <LogOut size={18} />
-            Logout
+
+            {!sidebarCollapsed && (
+              <span>Logout</span>
+            )}
           </Button>
         </div>
-
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 p-6 bg-gray-100 overflow-auto">
+      {/* CONTENT AREA */}
+      <main className="flex-1 overflow-auto p-6">
         <Outlet />
       </main>
-
     </div>
   );
 }
