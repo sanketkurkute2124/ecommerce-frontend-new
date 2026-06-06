@@ -117,7 +117,7 @@ export default function Login() {
           if (data.Role === "Admin") {
             navigate("/admin");
           } else {
-            navigate("/customer");
+            navigate("/products");
           }
         } else {
           alert("Invalid email or password");
