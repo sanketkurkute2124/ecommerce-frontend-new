@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axiosInstance";
-import { Menu } from "lucide-react";
+import CustomerNavbar from "./CustomerNavbar";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(0);
 
+  const [selectedCategoryId, setSelectedCategoryId] = useState(0);
   const [openSidebar, setOpenSidebar] = useState(false);
 
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function Products() {
     fetchCategories();
   }, []);
 
-  /* PRODUCTS */
+  /* ---------------- API ---------------- */
   const fetchProducts = async () => {
     const res = await api.get("/Product/GetAllProducts");
     const data = res.data.Data || [];
@@ -26,27 +26,23 @@ export default function Products() {
     setFiltered(data);
   };
 
-  /* CATEGORIES */
   const fetchCategories = async () => {
     const res = await api.get("/Categories/GetAllCategories");
     setCategories(res.data.Data || []);
   };
 
-  /* FILTER */
+  /* ---------------- FILTER ---------------- */
   const filterByCategory = (id) => {
     setSelectedCategoryId(id);
-    setOpenSidebar(false);
 
     if (id === 0) {
       setFiltered(products);
     } else {
-      setFiltered(
-        products.filter((p) => p.CategoryId === id)
-      );
+      setFiltered(products.filter(p => p.CategoryId === id));
     }
   };
 
-  /* CART */
+  /* ---------------- ADD TO CART ---------------- */
   const addToCart = (product) => {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     cart.push(product);
@@ -55,131 +51,139 @@ export default function Products() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="bg-gray-50 min-h-screen">
 
-      {/* ================= MOBILE TOP BAR ================= */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow p-3 flex items-center z-50">
-        <button onClick={() => setOpenSidebar(true)}>
-          <Menu />
+      {/* NAVBAR */}
+      <CustomerNavbar />
+
+      {/* MOBILE HEADER */}
+      <div className="md:hidden flex justify-between items-center p-3 bg-white shadow">
+        <h1 className="font-bold">Products</h1>
+
+        <button
+          onClick={() => setOpenSidebar(true)}
+          className="text-2xl"
+        >
+          ☰
         </button>
-        <h1 className="ml-3 font-bold">Products</h1>
       </div>
 
-      {/* ================= SIDEBAR ================= */}
-      <aside
-        className={`
-          fixed md:static top-0 left-0 h-full w-64 bg-white shadow p-4 z-50
-          transform transition-transform duration-300
-          ${openSidebar ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
-        `}
-      >
-        <h2 className="text-lg font-bold mb-4">
-          Categories
-        </h2>
+      <div className="flex">
 
-        {/* ALL */}
-        <button
-          onClick={() => filterByCategory(0)}
-          className={`w-full text-left p-2 rounded ${
-            selectedCategoryId === 0
-              ? "bg-blue-500 text-white"
-              : "hover:bg-gray-100"
-          }`}
+        {/* BACKDROP (FIX 1) */}
+        {openSidebar && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40 md:hidden"
+            onClick={() => setOpenSidebar(false)}
+          />
+        )}
+
+        {/* SIDEBAR (FIX 2 - FULL CONTROL) */}
+        <aside
+          className={`
+            fixed md:static top-0 left-0 h-full w-64 bg-white shadow p-4 z-50
+            transform transition-transform duration-300
+            ${openSidebar ? "translate-x-0" : "-translate-x-full"}
+            md:translate-x-0
+          `}
         >
-          All Products
-        </button>
 
-        {/* CATEGORY LIST */}
-        {categories.map((c) => (
+          {/* CLOSE BUTTON (mobile only) */}
+          <div className="flex justify-between items-center md:hidden mb-3">
+            <h2 className="font-bold">Categories</h2>
+
+            <button
+              onClick={() => setOpenSidebar(false)}
+              className="text-red-500 text-xl"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* ALL CATEGORY */}
           <button
-            key={c.Id}
-            onClick={() => filterByCategory(c.Id)}
-            className={`w-full text-left p-2 mt-1 rounded ${
-              selectedCategoryId === c.Id
+            onClick={() => {
+              filterByCategory(0);
+              setOpenSidebar(false);   // FIX 3
+            }}
+            className={`w-full text-left p-2 rounded ${
+              selectedCategoryId === 0
                 ? "bg-blue-500 text-white"
                 : "hover:bg-gray-100"
             }`}
           >
-            {c.Name}
+            All Products
           </button>
-        ))}
 
-        {/* CLOSE BUTTON MOBILE */}
-        <button
-          className="md:hidden mt-4 bg-red-500 text-white w-full py-2 rounded"
-          onClick={() => setOpenSidebar(false)}
-        >
-          Close
-        </button>
-      </aside>
-
-      {/* BACKDROP */}
-      {openSidebar && (
-        <div
-          className="fixed inset-0 bg-black opacity-40 md:hidden"
-          onClick={() => setOpenSidebar(false)}
-        />
-      )}
-
-      {/* ================= PRODUCTS GRID ================= */}
-      <main className="flex-1 p-4 md:p-6 mt-12 md:mt-0">
-
-        <h1 className="hidden md:block text-2xl font-bold mb-5">
-          All Products
-        </h1>
-
-        <div className="
-          grid gap-4
-          grid-cols-1
-          sm:grid-cols-2
-          md:grid-cols-3
-        ">
-          {filtered.map((p) => (
-            <div
-              key={p.Id}
-              className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 md:p-4"
+          {/* CATEGORY LIST */}
+          {categories.map(c => (
+            <button
+              key={c.Id}
+              onClick={() => {
+                filterByCategory(c.Id);
+                setOpenSidebar(false);   // FIX 4
+              }}
+              className={`w-full text-left p-2 mt-1 rounded ${
+                selectedCategoryId === c.Id
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-100"
+              }`}
             >
-
-              {/* IMAGE */}
-              <img
-                src={p.ImageUrl}
-                className="h-40 w-full object-cover rounded"
-              />
-
-              {/* NAME */}
-              <h2 className="font-semibold mt-2 text-sm md:text-base">
-                {p.Name}
-              </h2>
-
-              {/* PRICE */}
-              <p className="text-green-600 font-bold">
-                ₹{p.Price}
-              </p>
-
-              {/* BUTTONS */}
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => addToCart(p)}
-                  className="flex-1 bg-yellow-500 text-white py-2 rounded text-sm"
-                >
-                  Add
-                </button>
-
-                <button
-                  onClick={() =>
-                    navigate(`/products/${p.Id}`)
-                  }
-                  className="flex-1 bg-blue-600 text-white py-2 rounded text-sm"
-                >
-                  Buy
-                </button>
-              </div>
-
-            </div>
+              {c.Name}
+            </button>
           ))}
-        </div>
-      </main>
+
+        </aside>
+
+        {/* PRODUCTS GRID */}
+        <main className="flex-1 p-4 md:p-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+
+            {filtered.map(p => (
+              <div key={p.Id} className="bg-white shadow rounded p-3">
+
+                <img
+                  src={p.ImageUrl}
+                  className="h-40 w-full object-cover rounded"
+                />
+
+                <h2 className="font-semibold mt-2">
+                  {p.Name}
+                </h2>
+
+                <p className="text-green-600 font-bold">
+                  ₹{p.Price}
+                </p>
+
+                <div className="flex gap-2 mt-3">
+
+                  <button
+                    onClick={() => addToCart(p)}
+                    className="flex-1 bg-yellow-500 text-white py-2 rounded"
+                  >
+                    Add
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      navigate(`/products/${p.Id}`)
+                    }
+                    className="flex-1 bg-blue-600 text-white py-2 rounded"
+                  >
+                    Buy
+                  </button>
+
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+
+        </main>
+
+      </div>
     </div>
   );
 }
