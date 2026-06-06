@@ -28,7 +28,9 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   const [openProducts, setOpenProducts] = useState(true);
+  const [openCategories, setOpenCategories] = useState(false);
 
   const logout = () => {
     localStorage.clear();
@@ -37,6 +39,9 @@ export default function AdminLayout() {
 
   const isProductRoute =
     location.pathname.startsWith("/admin/products");
+
+  const isCategoryRoute =
+    location.pathname.startsWith("/admin/categories");
 
   return (
     <div className="flex h-screen bg-slate-100">
@@ -72,6 +77,7 @@ export default function AdminLayout() {
 
         {/* MENU */}
         <nav className="flex-1 p-3 space-y-2">
+
           {/* Dashboard */}
           <NavLink
             to="/admin"
@@ -89,9 +95,11 @@ export default function AdminLayout() {
             {!sidebarCollapsed && <span>Dashboard</span>}
           </NavLink>
 
-          {/* Products */}
+          {/* PRODUCTS */}
           <button
-            onClick={() => setOpenProducts(!openProducts)}
+            onClick={() =>
+              setOpenProducts(!openProducts)
+            }
             className={`w-full flex items-center px-3 py-3 rounded-lg transition-all
             ${
               isProductRoute
@@ -118,7 +126,6 @@ export default function AdminLayout() {
             )}
           </button>
 
-          {/* Product Submenu */}
           {!sidebarCollapsed && openProducts && (
             <div className="ml-6 flex flex-col gap-1">
               <NavLink
@@ -154,25 +161,73 @@ export default function AdminLayout() {
             </div>
           )}
 
-          {/* Categories */}
-          <NavLink
-            to="/admin/categories"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-3 rounded-lg transition-all
-              ${
-                isActive
-                  ? "bg-white text-black"
-                  : "hover:bg-slate-800 text-slate-200"
-              }`
+          {/* CATEGORIES */}
+          <button
+            onClick={() =>
+              setOpenCategories(!openCategories)
             }
+            className={`w-full flex items-center px-3 py-3 rounded-lg transition-all
+            ${
+              isCategoryRoute
+                ? "bg-slate-800"
+                : "hover:bg-slate-800"
+            }`}
           >
             <Tags size={20} />
-            {!sidebarCollapsed && (
-              <span>Categories</span>
-            )}
-          </NavLink>
 
-          {/* Orders */}
+            {!sidebarCollapsed && (
+              <>
+                <span className="ml-3">
+                  Categories
+                </span>
+
+                <span className="ml-auto">
+                  {openCategories ? (
+                    <ChevronDown size={16} />
+                  ) : (
+                    <ChevronRight size={16} />
+                  )}
+                </span>
+              </>
+            )}
+          </button>
+
+          {!sidebarCollapsed && openCategories && (
+            <div className="ml-6 flex flex-col gap-1">
+              <NavLink
+                to="/admin/categories"
+                end
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                  ${
+                    isActive
+                      ? "bg-white text-black"
+                      : "hover:bg-slate-800 text-slate-300"
+                  }`
+                }
+              >
+                <List size={16} />
+                View Categories
+              </NavLink>
+
+              <NavLink
+                to="/admin/categories/add"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+                  ${
+                    isActive
+                      ? "bg-white text-black"
+                      : "hover:bg-slate-800 text-slate-300"
+                  }`
+                }
+              >
+                <Plus size={16} />
+                Add Category
+              </NavLink>
+            </div>
+          )}
+
+          {/* ORDERS */}
           <NavLink
             to="/admin/orders"
             className={({ isActive }) =>
@@ -190,7 +245,7 @@ export default function AdminLayout() {
             )}
           </NavLink>
 
-          {/* Boxes */}
+          {/* BOXES */}
           <NavLink
             to="/admin/boxes"
             className={({ isActive }) =>
@@ -216,7 +271,6 @@ export default function AdminLayout() {
             className="w-full bg-red-500 hover:bg-red-600 flex items-center gap-2"
           >
             <LogOut size={18} />
-
             {!sidebarCollapsed && (
               <span>Logout</span>
             )}
@@ -224,7 +278,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* CONTENT AREA */}
+      {/* CONTENT */}
       <main className="flex-1 overflow-auto p-6">
         <Outlet />
       </main>

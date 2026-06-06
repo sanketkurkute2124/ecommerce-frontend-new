@@ -10,7 +10,7 @@ import AddProduct from "./pages/admin/AddProduct";
 import Categories from "./pages/admin/Categories";
 import Orders from "./pages/admin/Orders";
 import Boxes from "./pages/admin/Boxes";
-
+import AddCategory from "./pages/admin/AddCategory";
 function App() {
   return (
     <BrowserRouter>
@@ -32,7 +32,9 @@ function App() {
           <Route path="products/add" element={<AddProduct />} />
 
           {/* Other Modules */}
+          
           <Route path="categories" element={<Categories />} />
+          <Route path="categories/add" element={<AddCategory />} />
           <Route path="orders" element={<Orders />} />
           <Route path="boxes" element={<Boxes />} />
         </Route>
