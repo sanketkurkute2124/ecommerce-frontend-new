@@ -14,6 +14,7 @@ import {
   Tags,
   ShoppingCart,
   Package,
+  Users,
   LogOut,
   ChevronDown,
   ChevronRight,
@@ -28,7 +29,6 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
   const [openProducts, setOpenProducts] = useState(true);
   const [openCategories, setOpenCategories] = useState(false);
 
@@ -47,24 +47,17 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-slate-100">
       {/* SIDEBAR */}
       <aside
-        className={`
-          bg-slate-900 text-white flex flex-col
-          transition-all duration-300 shadow-xl
-          ${sidebarCollapsed ? "w-20" : "w-64"}
-        `}
+        className={`bg-slate-900 text-white flex flex-col transition-all duration-300 shadow-xl
+        ${sidebarCollapsed ? "w-20" : "w-64"}`}
       >
         {/* HEADER */}
         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
           {!sidebarCollapsed && (
-            <h1 className="text-lg font-bold">
-              🛒 Admin Panel
-            </h1>
+            <h1 className="text-lg font-bold">🛒 Admin Panel</h1>
           )}
 
           <button
-            onClick={() =>
-              setSidebarCollapsed(!sidebarCollapsed)
-            }
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="p-2 rounded hover:bg-slate-800"
           >
             {sidebarCollapsed ? (
@@ -76,9 +69,9 @@ export default function AdminLayout() {
         </div>
 
         {/* MENU */}
-        <nav className="flex-1 p-3 space-y-2">
+        <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
 
-          {/* Dashboard */}
+          {/* DASHBOARD */}
           <NavLink
             to="/admin"
             end
@@ -97,24 +90,15 @@ export default function AdminLayout() {
 
           {/* PRODUCTS */}
           <button
-            onClick={() =>
-              setOpenProducts(!openProducts)
-            }
+            onClick={() => setOpenProducts(!openProducts)}
             className={`w-full flex items-center px-3 py-3 rounded-lg transition-all
-            ${
-              isProductRoute
-                ? "bg-slate-800"
-                : "hover:bg-slate-800"
-            }`}
+            ${isProductRoute ? "bg-slate-800" : "hover:bg-slate-800"}`}
           >
             <ShoppingBag size={20} />
 
             {!sidebarCollapsed && (
               <>
-                <span className="ml-3">
-                  Products
-                </span>
-
+                <span className="ml-3">Products</span>
                 <span className="ml-auto">
                   {openProducts ? (
                     <ChevronDown size={16} />
@@ -163,24 +147,15 @@ export default function AdminLayout() {
 
           {/* CATEGORIES */}
           <button
-            onClick={() =>
-              setOpenCategories(!openCategories)
-            }
+            onClick={() => setOpenCategories(!openCategories)}
             className={`w-full flex items-center px-3 py-3 rounded-lg transition-all
-            ${
-              isCategoryRoute
-                ? "bg-slate-800"
-                : "hover:bg-slate-800"
-            }`}
+            ${isCategoryRoute ? "bg-slate-800" : "hover:bg-slate-800"}`}
           >
             <Tags size={20} />
 
             {!sidebarCollapsed && (
               <>
-                <span className="ml-3">
-                  Categories
-                </span>
-
+                <span className="ml-3">Categories</span>
                 <span className="ml-auto">
                   {openCategories ? (
                     <ChevronDown size={16} />
@@ -240,9 +215,23 @@ export default function AdminLayout() {
             }
           >
             <ShoppingCart size={20} />
-            {!sidebarCollapsed && (
-              <span>Orders</span>
-            )}
+            {!sidebarCollapsed && <span>Orders</span>}
+          </NavLink>
+
+          {/* CUSTOMERS */}
+          <NavLink
+            to="/admin/customers"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-3 rounded-lg transition-all
+              ${
+                isActive
+                  ? "bg-white text-black"
+                  : "hover:bg-slate-800 text-slate-200"
+              }`
+            }
+          >
+            <Users size={20} />
+            {!sidebarCollapsed && <span>Customers</span>}
           </NavLink>
 
           {/* BOXES */}
@@ -258,9 +247,7 @@ export default function AdminLayout() {
             }
           >
             <Package size={20} />
-            {!sidebarCollapsed && (
-              <span>Boxes</span>
-            )}
+            {!sidebarCollapsed && <span>Boxes</span>}
           </NavLink>
         </nav>
 
@@ -271,9 +258,7 @@ export default function AdminLayout() {
             className="w-full bg-red-500 hover:bg-red-600 flex items-center gap-2"
           >
             <LogOut size={18} />
-            {!sidebarCollapsed && (
-              <span>Logout</span>
-            )}
+            {!sidebarCollapsed && <span>Logout</span>}
           </Button>
         </div>
       </aside>
