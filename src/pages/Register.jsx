@@ -181,15 +181,23 @@ export default function Register() {
               )}
           </div>
 
-          {/* DOB */}
-          <div>
+          <div className="md:col-span-1">
+            <label
+              htmlFor="dateOfBirth"
+              className="block text-sm font-medium mb-2"
+            >
+              Date of Birth
+            </label>
+
             <input
               type="date"
+              id="dateOfBirth"
               name="dateOfBirth"
-              className="w-full border rounded-lg p-3"
               value={formik.values.dateOfBirth}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              max={new Date().toISOString().split("T")[0]}
+              className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
 
             {formik.touched.dateOfBirth &&
