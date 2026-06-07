@@ -17,6 +17,9 @@ export default function Register() {
       role: "Customer",
     },
 
+    validateOnChange: true,
+    validateOnBlur: true,
+
     validationSchema: Yup.object({
       firstName: Yup.string()
         .required("First Name is required"),
@@ -29,24 +32,34 @@ export default function Register() {
         .required("Email is required"),
 
       phoneNumber: Yup.string()
-        .matches(/^[0-9]{10}$/, "Phone Number must be 10 digits")
+        .matches(
+          /^[0-9]{10}$/,
+          "Phone Number must be exactly 10 digits"
+        )
         .required("Phone Number is required"),
 
-      dateOfBirth: Yup.string()
+      dateOfBirth: Yup.date()
+        .max(
+          new Date(),
+          "Date of Birth cannot be in the future"
+        )
         .required("Date of Birth is required"),
 
       password: Yup.string()
-        .min(8, "Password must be at least 8 characters")
+        .min(
+          8,
+          "Password must be at least 8 characters"
+        )
         .required("Password is required"),
 
       role: Yup.string()
         .required("Role is required"),
     }),
 
-    validateOnChange: true,
-    validateOnBlur: true,
-
-    onSubmit: async (values, { resetForm }) => {
+    onSubmit: async (
+      values,
+      { resetForm, setSubmitting }
+    ) => {
       try {
         const payload = {
           FirstName: values.firstName,
@@ -60,12 +73,11 @@ export default function Register() {
           Role: values.role,
         };
 
-        console.log(payload);
-
-        const response = await axiosInstance.post(
-          "/Customers/RegisterCustomer",
-          payload
-        );
+        const response =
+          await axiosInstance.post(
+            "/Customers/RegisterCustomer",
+            payload
+          );
 
         if (response.data.Success) {
           alert("Registration Successful");
@@ -79,23 +91,32 @@ export default function Register() {
       } catch (error) {
         console.error(error);
 
-        if (error.response) {
-          console.log(error.response.data);
-          alert(JSON.stringify(error.response.data));
+        if (error.response?.data) {
+          alert(
+            JSON.stringify(error.response.data)
+          );
         } else {
           alert("Something went wrong");
         }
+      } finally {
+        setSubmitting(false);
       }
     },
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
 
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Create Account
-        </h1>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold">
+            Create Account
+          </h1>
+
+          <p className="text-gray-500 mt-2">
+            Register your account
+          </p>
+        </div>
 
         <form
           onSubmit={formik.handleSubmit}
@@ -107,10 +128,10 @@ export default function Register() {
               type="text"
               name="firstName"
               placeholder="First Name"
-              className="w-full border rounded-lg p-3"
               value={formik.values.firstName}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
 
             {formik.touched.firstName &&
@@ -127,10 +148,10 @@ export default function Register() {
               type="text"
               name="lastName"
               placeholder="Last Name"
-              className="w-full border rounded-lg p-3"
               value={formik.values.lastName}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
 
             {formik.touched.lastName &&
@@ -147,10 +168,10 @@ export default function Register() {
               type="email"
               name="email"
               placeholder="Email Address"
-              className="w-full border rounded-lg p-3"
               value={formik.values.email}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
 
             {formik.touched.email &&
@@ -164,13 +185,25 @@ export default function Register() {
           {/* Phone */}
           <div>
             <input
-              type="text"
+              type="tel"
               name="phoneNumber"
               placeholder="Phone Number"
-              className="w-full border rounded-lg p-3"
+              maxLength={10}
               value={formik.values.phoneNumber}
-              onChange={formik.handleChange}
+              onChange={(e) => {
+                const value =
+                  e.target.value.replace(
+                    /\D/g,
+                    ""
+                  );
+
+                formik.setFieldValue(
+                  "phoneNumber",
+                  value
+                );
+              }}
               onBlur={formik.handleBlur}
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
 
             {formik.touched.phoneNumber &&
@@ -181,23 +214,24 @@ export default function Register() {
               )}
           </div>
 
-          <div className="md:col-span-1">
-            <label
-              htmlFor="dateOfBirth"
-              className="block text-sm font-medium mb-2"
-            >
+          {/* Date Of Birth */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
               Date of Birth
             </label>
 
             <input
               type="date"
-              id="dateOfBirth"
               name="dateOfBirth"
               value={formik.values.dateOfBirth}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              max={new Date().toISOString().split("T")[0]}
-              className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              max={
+                new Date()
+                  .toISOString()
+                  .split("T")[0]
+              }
+              className="w-full border rounded-lg p-3 bg-white focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
 
             {formik.touched.dateOfBirth &&
@@ -213,11 +247,11 @@ export default function Register() {
             <input
               type="password"
               name="password"
-              placeholder="Password"
-              className="w-full border rounded-lg p-3"
+              placeholder="Password (min 8 chars)"
               value={formik.values.password}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
 
             {formik.touched.password &&
@@ -230,48 +264,49 @@ export default function Register() {
 
           {/* Role */}
           <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              Role
+            </label>
+
             <select
               name="role"
-              className="w-full border rounded-lg p-3"
               value={formik.values.role}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              disabled
+              className="w-full border rounded-lg p-3 bg-gray-100"
             >
               <option value="Customer">
                 Customer
               </option>
-              <option value="Admin">
-                Admin
-              </option>
             </select>
-
-            {formik.touched.role &&
-              formik.errors.role && (
-                <p className="text-red-500 text-sm mt-1">
-                  {formik.errors.role}
-                </p>
-              )}
           </div>
 
           {/* Submit */}
           <button
             type="submit"
-            disabled={!formik.isValid}
-            className="w-full bg-slate-900 text-white p-3 rounded-lg hover:bg-slate-800 disabled:bg-gray-400"
+            disabled={
+              !formik.isValid ||
+              formik.isSubmitting
+            }
+            className="w-full bg-slate-900 text-white py-3 rounded-lg hover:bg-slate-800 disabled:bg-gray-400 transition"
           >
-            Register
+            {formik.isSubmitting
+              ? "Registering..."
+              : "Register"}
           </button>
         </form>
 
-        <p className="text-center mt-5">
-          Already have an account?{" "}
+        <div className="text-center mt-6">
+          <p className="text-gray-600">
+            Already have an account?
+          </p>
+
           <Link
             to="/"
-            className="text-blue-600 font-semibold"
+            className="text-blue-600 font-semibold hover:underline"
           >
             Login
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
