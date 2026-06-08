@@ -15,7 +15,7 @@ import { Button } from "../../components/ui/button";
 
 export default function AddProduct() {
   const [categories, setCategories] = useState([]);
-
+  const [image, setImage] = useState(null);
   useEffect(() => {
     loadCategories();
   }, []);
@@ -38,7 +38,7 @@ export default function AddProduct() {
       description: "",
       price: "",
       stockQuantity: "",
-      imageUrl: "",
+      // imageUrl: "",
       discountPercentage: "",
       categoryId: "",
       isAvailable: true,
@@ -54,25 +54,45 @@ export default function AddProduct() {
 
     onSubmit: async (values, { resetForm }) => {
       try {
-        const payload = {
-          Name: values.name,
-          Description: values.description,
-          Price: Number(values.price),
-          StockQuantity: Number(values.stockQuantity),
-          ImageUrl: values.imageUrl,
-          DiscountPercentage: Number(values.discountPercentage || 0),
-          CategoryId: Number(values.categoryId),
-          IsAvailable: values.isAvailable,
-        };
+        const formData = new FormData();
 
-        console.log("Payload:", payload);
-
-        const response = await axiosInstance.post(
-          "/Product/CreateProduct",
-          payload
+        formData.append("Name", values.name);
+        formData.append(
+          "Description",
+          values.description
+        );
+        formData.append(
+          "Price",
+          values.price
+        );
+        formData.append(
+          "StockQuantity",
+          values.stockQuantity
+        );
+        formData.append(
+          "DiscountPercentage",
+          values.discountPercentage || 0
+        );
+        formData.append(
+          "CategoryId",
+          values.categoryId
         );
 
-        console.log(response.data);
+        if (image) {
+          formData.append("Image", image);
+        }
+
+        await axiosInstance.post(
+          "/Product/CreateProduct",
+          formData,
+          {
+            headers: {
+              "Content-Type":
+                "multipart/form-data",
+            },
+          }
+        );
+        // console.log(response.data);
 
         alert("Product Added Successfully");
 
@@ -173,16 +193,16 @@ export default function AddProduct() {
               </p>
             </div>
 
-            {/* Image URL */}
             <div className="md:col-span-2">
-              <Input
-                name="imageUrl"
-                placeholder="Image URL"
-                value={formik.values.imageUrl}
-                onChange={formik.handleChange}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setImage(e.target.files[0])
+                }
+                className="w-full border rounded-md p-2"
               />
             </div>
-
             {/* Discount */}
             <div>
               <Input
