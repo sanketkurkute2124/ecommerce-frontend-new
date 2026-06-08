@@ -43,13 +43,28 @@ export default function Products() {
   };
 
   /* ---------------- ADD TO CART ---------------- */
-  const addToCart = (product) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push(product);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Added to cart");
-  };
+const addToCart = (product) => {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
+  const existing = cart.find(
+    (item) => item.Id === product.Id
+  );
+
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({
+      ...product,
+      quantity: 1,
+    });
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  window.dispatchEvent(new Event("cartUpdated"));
+
+  alert("Added to cart");
+};
   return (
     <div className="bg-gray-50 min-h-screen">
 
@@ -106,11 +121,10 @@ export default function Products() {
               filterByCategory(0);
               setOpenSidebar(false);   // FIX 3
             }}
-            className={`w-full text-left p-2 rounded ${
-              selectedCategoryId === 0
+            className={`w-full text-left p-2 rounded ${selectedCategoryId === 0
                 ? "bg-blue-500 text-white"
                 : "hover:bg-gray-100"
-            }`}
+              }`}
           >
             All Products
           </button>
@@ -123,11 +137,10 @@ export default function Products() {
                 filterByCategory(c.Id);
                 setOpenSidebar(false);   // FIX 4
               }}
-              className={`w-full text-left p-2 mt-1 rounded ${
-                selectedCategoryId === c.Id
+              className={`w-full text-left p-2 mt-1 rounded ${selectedCategoryId === c.Id
                   ? "bg-blue-500 text-white"
                   : "hover:bg-gray-100"
-              }`}
+                }`}
             >
               {c.Name}
             </button>
