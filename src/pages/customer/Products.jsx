@@ -10,6 +10,7 @@ export default function Products() {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState(0);
   const [openSidebar, setOpenSidebar] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -20,15 +21,29 @@ export default function Products() {
 
   /* ---------------- API ---------------- */
   const fetchProducts = async () => {
-    const res = await api.get("/Product/GetAllProducts");
-    const data = res.data.Data || [];
-    setProducts(data);
-    setFiltered(data);
+    try {
+      setLoading(true);
+
+      const res = await api.get("/Product/GetAllProducts");
+      const data = res.data?.Data || [];
+
+      setProducts(data);
+      setFiltered(data);
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchCategories = async () => {
-    const res = await api.get("/Categories/GetAllCategories");
-    setCategories(res.data.Data || []);
+    try {
+      const res = await api.get("/Categories/GetAllCategories");
+      setCategories(res.data?.Data || []);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   /* ---------------- FILTER ---------------- */
@@ -40,31 +55,26 @@ export default function Products() {
     } else {
       setFiltered(products.filter(p => p.CategoryId === id));
     }
+
+    setOpenSidebar(false);
   };
 
   /* ---------------- ADD TO CART ---------------- */
   const addToCart = (product) => {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    const existing = cart.find(
-      (item) => item.Id === product.Id
-    );
+    const existing = cart.find((item) => item.Id === product.Id);
 
     if (existing) {
-      existing.quantity += 1;
+      existing.quantity = (existing.quantity || 1) + 1;
     } else {
-      cart.push({
-        ...product,
-        quantity: 1,
-      });
+      cart.push({ ...product, quantity: 1 });
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
-
     window.dispatchEvent(new Event("cartUpdated"));
-
-    alert("Added to cart");
   };
+
   return (
     <div className="bg-gray-50 min-h-screen">
 
@@ -85,7 +95,7 @@ export default function Products() {
 
       <div className="flex">
 
-        {/* BACKDROP (FIX 1) */}
+        {/* BACKDROP */}
         {openSidebar && (
           <div
             className="fixed inset-0 bg-black/40 z-40 md:hidden"
@@ -93,7 +103,7 @@ export default function Products() {
           />
         )}
 
-        {/* SIDEBAR (FIX 2 - FULL CONTROL) */}
+        {/* SIDEBAR */}
         <aside
           className={`
             fixed md:static top-0 left-0 h-full w-64 bg-white shadow p-4 z-50
@@ -103,8 +113,7 @@ export default function Products() {
           `}
         >
 
-          {/* CLOSE BUTTON (mobile only) */}
-          <div className="flex justify-between items-center md:hidden mb-3">
+          <div className="flex justify-between md:hidden mb-3">
             <h2 className="font-bold">Categories</h2>
 
             <button
@@ -115,32 +124,28 @@ export default function Products() {
             </button>
           </div>
 
-          {/* ALL CATEGORY */}
+          {/* ALL */}
           <button
-            onClick={() => {
-              filterByCategory(0);
-              setOpenSidebar(false);   // FIX 3
-            }}
-            className={`w-full text-left p-2 rounded ${selectedCategoryId === 0
-              ? "bg-blue-500 text-white"
-              : "hover:bg-gray-100"
-              }`}
+            onClick={() => filterByCategory(0)}
+            className={`w-full text-left p-2 rounded ${
+              selectedCategoryId === 0
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100"
+            }`}
           >
             All Products
           </button>
 
           {/* CATEGORY LIST */}
-          {categories.map(c => (
+          {categories.map((c) => (
             <button
               key={c.Id}
-              onClick={() => {
-                filterByCategory(c.Id);
-                setOpenSidebar(false);   // FIX 4
-              }}
-              className={`w-full text-left p-2 mt-1 rounded ${selectedCategoryId === c.Id
-                ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100"
-                }`}
+              onClick={() => filterByCategory(c.Id)}
+              className={`w-full text-left p-2 mt-1 rounded ${
+                selectedCategoryId === c.Id
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-100"
+              }`}
             >
               {c.Name}
             </button>
@@ -148,63 +153,74 @@ export default function Products() {
 
         </aside>
 
-        {/* PRODUCTS GRID */}
+        {/* PRODUCTS */}
         <main className="flex-1 p-4 md:p-6">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+          {/* LOADING */}
+          {loading ? (
+            <div className="text-center text-gray-500 p-10">
+              Loading products...
+            </div>
+          ) : (
 
-            {filtered.map(p => (
-              <div key={p.Id} className="bg-white shadow rounded p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
 
-                <img
-                  src={
-                    p.ImageUrl?.startsWith("http")
-                      ? p.ImageUrl
-                      : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
-                  }
-                  alt={p.Name}
-                  className="h-40 w-full object-cover rounded cursor-pointer"
-                  onClick={() => navigate(`/products/${p.Id}`)}   // ✅ ADD THIS
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://via.placeholder.com/300x200?text=No+Image";
-                  }}
-                />
+              {filtered.map((p) => (
+                <div key={p.Id} className="bg-white shadow rounded p-3">
 
-                <h2 className="font-semibold mt-2">
-                  {p.Name}
-                </h2>
-
-                <p className="text-green-600 font-bold">
-                  ₹{p.Price}
-                </p>
-
-                <div className="flex gap-2 mt-3">
-
-                  <button
-                    onClick={() => addToCart(p)}
-                    className="flex-1 bg-yellow-500 text-white py-2 rounded"
-                  >
-                    Add
-                  </button>
-
-
-                  <button
-                    onClick={() => {
-                      addToCart(p);              // add product to cart
-                      navigate("/cart");        // go directly to cart page
+                  {/* IMAGE */}
+                  <img
+                    src={
+                      p.ImageUrl?.startsWith("http")
+                        ? p.ImageUrl
+                        : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
+                    }
+                    alt={p.Name}
+                    loading="lazy"
+                    className="h-40 w-full object-cover rounded cursor-pointer"
+                    onClick={() => navigate(`/products/${p.Id}`)}
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://via.placeholder.com/300x200?text=No+Image";
                     }}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded"
-                  >
-                    Buy
-                  </button>
+                  />
+
+                  {/* NAME */}
+                  <h2 className="font-semibold mt-2">{p.Name}</h2>
+
+                  {/* PRICE */}
+                  <p className="text-green-600 font-bold">
+                    ₹{p.Price}
+                  </p>
+
+                  {/* BUTTONS */}
+                  <div className="flex gap-2 mt-3">
+
+                    <button
+                      onClick={() => addToCart(p)}
+                      className="flex-1 bg-yellow-500 text-white py-2 rounded"
+                    >
+                      Add
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        addToCart(p);
+                        navigate("/cart");
+                      }}
+                      className="flex-1 bg-blue-600 text-white py-2 rounded"
+                    >
+                      Buy
+                    </button>
+
+                  </div>
 
                 </div>
+              ))}
 
-              </div>
-            ))}
+            </div>
 
-          </div>
+          )}
 
         </main>
 
