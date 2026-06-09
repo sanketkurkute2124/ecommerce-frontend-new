@@ -163,7 +163,8 @@ export default function Products() {
                       : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
                   }
                   alt={p.Name}
-                  className="h-40 w-full object-cover rounded"
+                  className="h-40 w-full object-cover rounded cursor-pointer"
+                  onClick={() => navigate(`/products/${p.Id}`)}   // ✅ ADD THIS
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://via.placeholder.com/300x200?text=No+Image";
@@ -189,9 +190,10 @@ export default function Products() {
 
 
                   <button
-                    onClick={() =>
-                      navigate(`/products/${p.Id}`)
-                    }
+                    onClick={() => {
+                      addToCart(p);              // add product to cart
+                      navigate("/cart");        // go directly to cart page
+                    }}
                     className="flex-1 bg-blue-600 text-white py-2 rounded"
                   >
                     Buy
