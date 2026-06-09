@@ -43,28 +43,28 @@ export default function Products() {
   };
 
   /* ---------------- ADD TO CART ---------------- */
-const addToCart = (product) => {
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const addToCart = (product) => {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-  const existing = cart.find(
-    (item) => item.Id === product.Id
-  );
+    const existing = cart.find(
+      (item) => item.Id === product.Id
+    );
 
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({
-      ...product,
-      quantity: 1,
-    });
-  }
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({
+        ...product,
+        quantity: 1,
+      });
+    }
 
-  localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
 
-  window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("cartUpdated"));
 
-  alert("Added to cart");
-};
+    alert("Added to cart");
+  };
   return (
     <div className="bg-gray-50 min-h-screen">
 
@@ -122,8 +122,8 @@ const addToCart = (product) => {
               setOpenSidebar(false);   // FIX 3
             }}
             className={`w-full text-left p-2 rounded ${selectedCategoryId === 0
-                ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100"
+              ? "bg-blue-500 text-white"
+              : "hover:bg-gray-100"
               }`}
           >
             All Products
@@ -138,8 +138,8 @@ const addToCart = (product) => {
                 setOpenSidebar(false);   // FIX 4
               }}
               className={`w-full text-left p-2 mt-1 rounded ${selectedCategoryId === c.Id
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-100"
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100"
                 }`}
             >
               {c.Name}
@@ -157,8 +157,17 @@ const addToCart = (product) => {
               <div key={p.Id} className="bg-white shadow rounded p-3">
 
                 <img
-                  src={p.ImageUrl}
+                  src={
+                    p.ImageUrl?.startsWith("http")
+                      ? p.ImageUrl
+                      : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
+                  }
+                  alt={p.Name}
                   className="h-40 w-full object-cover rounded"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/300x200?text=No+Image";
+                  }}
                 />
 
                 <h2 className="font-semibold mt-2">
@@ -177,6 +186,7 @@ const addToCart = (product) => {
                   >
                     Add
                   </button>
+
 
                   <button
                     onClick={() =>
