@@ -9,9 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
+import { Textarea } from "../../components/ui/textarea";
 
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 export default function AddProduct() {
   const [categories, setCategories] = useState([]);
@@ -45,11 +53,66 @@ export default function AddProduct() {
     },
 
     validationSchema: Yup.object({
-      name: Yup.string().required("Product Name is required"),
-      description: Yup.string().required("Description is required"),
-      price: Yup.number().required("Price is required"),
-      stockQuantity: Yup.number().required("Stock Quantity is required"),
-      categoryId: Yup.number().required("Category is required"),
+      // name: Yup.string().required("Product Name is required"),
+      // description: Yup.string().required("Description is required"),
+      // price: Yup.number().required("Price is required"),
+      // stockQuantity: Yup.number().required("Stock Quantity is required"),
+      // categoryId: Yup.number().required("Category is required"),
+      name: Yup.string()
+    .required("Product Name is required")
+    .min(
+      3,
+      "Product Name must be at least 3 characters"
+    )
+    .max(
+      100,
+      "Product Name cannot exceed 100 characters"
+    ),
+
+  description: Yup.string()
+    .required("Description is required")
+    .min(
+      10,
+      "Description must be at least 10 characters"
+    ),
+
+  price: Yup.number()
+    .required("Price is required")
+    .min(
+      0.01,
+      "Price must be greater than 0"
+    )
+    .max(
+      10000,
+      "Price cannot exceed 10000"
+    ),
+
+  stockQuantity: Yup.number()
+    .required(
+      "Stock Quantity is required"
+    )
+    .min(
+      0,
+      "Stock Quantity cannot be negative"
+    )
+    .max(
+      1000,
+      "Stock Quantity cannot exceed 1000"
+    ),
+
+  discountPercentage: Yup.number()
+    .min(
+      0,
+      "Discount Percentage cannot be negative"
+    )
+    .max(
+      100,
+      "Discount Percentage cannot exceed 100"
+    ),
+
+  categoryId: Yup.number().required(
+    "Category is required"
+  ),
     }),
 
     onSubmit: async (values, { resetForm }) => {
@@ -123,76 +186,109 @@ export default function AddProduct() {
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             {/* Product Name */}
-            <div>
+            <div className="space-y-2">
               <Input
                 name="name"
                 placeholder="Product Name"
                 value={formik.values.name}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
-              <p className="text-red-500 text-sm">
-                {formik.touched.name && formik.errors.name}
-              </p>
+
+              {formik.touched.name &&
+                formik.errors.name && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.name}
+                  </p>
+                )}
             </div>
 
-            {/* Price */}
-            <div>
+            <div className="space-y-2">
               <Input
                 type="number"
                 name="price"
                 placeholder="Price"
                 value={formik.values.price}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
+
+              {formik.touched.price &&
+                formik.errors.price && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.price}
+                  </p>
+                )}
             </div>
 
-            {/* Description */}
-            <div className="md:col-span-2">
-              <Input
+            <div className="md:col-span-2 space-y-2">
+              <Textarea
                 name="description"
                 placeholder="Description"
                 value={formik.values.description}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
+
+              {formik.touched.description &&
+                formik.errors.description && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.description}
+                  </p>
+                )}
             </div>
 
-            {/* Stock */}
-            <div>
+            <div className="space-y-2">
               <Input
                 type="number"
                 name="stockQuantity"
                 placeholder="Stock Quantity"
                 value={formik.values.stockQuantity}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
+
+              {formik.touched.stockQuantity &&
+                formik.errors.stockQuantity && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.stockQuantity}
+                  </p>
+                )}
             </div>
 
-            {/* Category Dropdown */}
-            <div>
-              <select
-                name="categoryId"
-                value={formik.values.categoryId}
-                onChange={formik.handleChange}
-                className="w-full border rounded-md p-2"
+            <div className="space-y-2">
+              <Select
+                value={formik.values.categoryId?.toString()}
+                onValueChange={(value) =>
+                  formik.setFieldValue(
+                    "categoryId",
+                    Number(value)
+                  )
+                }
               >
-                <option value="">Select Category</option>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
 
-                {categories.map((category) => (
-                  <option
-                    key={category.Id}
-                    value={category.Id}
-                  >
-                    {category.Name}
-                  </option>
-                ))}
-              </select>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem
+                      key={category.Id}
+                      value={category.Id.toString()}
+                    >
+                      {category.Name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              <p className="text-red-500 text-sm">
-                {formik.touched.categoryId &&
-                  formik.errors.categoryId}
-              </p>
+              {formik.touched.categoryId &&
+                formik.errors.categoryId && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.categoryId}
+                  </p>
+                )}
             </div>
-
             <div className="md:col-span-2">
               <input
                 type="file"
@@ -204,14 +300,22 @@ export default function AddProduct() {
               />
             </div>
             {/* Discount */}
-            <div>
+            <div className="space-y-2">
               <Input
                 type="number"
                 name="discountPercentage"
                 placeholder="Discount Percentage"
                 value={formik.values.discountPercentage}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
+
+              {formik.touched.discountPercentage &&
+                formik.errors.discountPercentage && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.discountPercentage}
+                  </p>
+                )}
             </div>
 
             {/* Available */}

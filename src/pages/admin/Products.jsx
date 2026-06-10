@@ -147,7 +147,12 @@ export default function Products() {
         "/Product/GetAllProducts"
       );
 
-      setProducts(res.data?.Data || []);
+      //setProducts(res.data?.Data || []);
+      setProducts(
+        res.data.Data.filter(
+          (p) => p.IsAvailable === true
+        )|| []
+      );
     } catch (err) {
       console.error("Error fetching products:", err);
     } finally {
@@ -166,7 +171,7 @@ export default function Products() {
 
     try {
       // Uncomment when API is ready
-      // await axiosInstance.delete(`/Product/DeleteProduct/${id}`);
+      await axiosInstance.delete(`/Product/DeleteProduct/${id}`);
 
       setProducts((prev) =>
         prev.filter((p) => p.Id !== id)
