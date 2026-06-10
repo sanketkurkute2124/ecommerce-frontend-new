@@ -135,6 +135,7 @@ import Cart from "./pages/customer/Cart";
 import AddAddress from "./pages/customer/AddAddress";
 import Payment from "./pages/customer/Payment";
 import OrderSummary from "./pages/customer/OrderSummary";
+import EditProduct from "./pages/admin/EditProduct";
 
 function App() {
   return (
@@ -170,6 +171,10 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="boxes" element={<Boxes />} />
           <Route path="customers" element={<CustomerList />} />
+          <Route
+  path="/admin/edit-product/:id"
+  element={<EditProduct />}
+/>
         </Route>
 
         {/* Redirect old customer URLs */}

@@ -114,6 +114,7 @@
 // }
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axiosInstance";
 
 import {
@@ -132,38 +133,47 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = async () => {
-    try {
-      const res = await axiosInstance.get(
-        "/Product/GetAllProducts"
-      );
-
-      setProducts(res.data.Data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const handleDelete = (id) => {
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axiosInstance.get(
+        "/Product/GetAllProducts"
+      );
+
+      setProducts(res.data?.Data || []);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
     if (
-      window.confirm(
+      !window.confirm(
         "Are you sure you want to delete this product?"
       )
     ) {
-      const updated = products.filter(
-        (p) => p.Id !== id
-      );
+      return;
+    }
 
-      setProducts(updated);
-
-      // Later connect API
+    try {
+      // Uncomment when API is ready
       // await axiosInstance.delete(`/Product/DeleteProduct/${id}`);
+
+      setProducts((prev) =>
+        prev.filter((p) => p.Id !== id)
+      );
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete product");
     }
   };
 
@@ -206,22 +216,23 @@ export default function Products() {
             {products.length > 0 ? (
               products.map((p) => (
                 <TableRow key={p.Id}>
-                  <TableCell>
-                    {p.Id}
-                  </TableCell>
+                  <TableCell>{p.Id}</TableCell>
 
                   <TableCell>
                     <img
                       src={
-                        p.ImageUrl?.startsWith("http")
-                          ? p.ImageUrl
-                          : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
+                        p.ImageUrl
+                          ? p.ImageUrl.startsWith("http")
+                            ? p.ImageUrl
+                            : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
+                          : "/no-image.png"
                       }
                       alt={p.Name}
                       className="w-20 h-20 object-cover rounded-lg border"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/no-image.png";
+                        e.currentTarget.src =
+                          "/no-image.png";
                       }}
                     />
                   </TableCell>
@@ -264,8 +275,8 @@ export default function Products() {
                         size="sm"
                         variant="outline"
                         onClick={() =>
-                          alert(
-                            `Edit Product ${p.Id}`
+                          navigate(
+                            `/admin/edit-product/${p.Id}`
                           )
                         }
                       >
