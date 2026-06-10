@@ -24,14 +24,20 @@ export default function Products() {
     try {
       setLoading(true);
 
-      const res = await api.get("/Product/GetAllProducts");
-      const data = res.data?.Data || [];
+      const res = await api.get(
+        "/Product/GetAllProducts"
+      );
+
+      const data =
+        res.data?.Data?.filter(
+          (p) => p.IsAvailable === true
+        ) || [];
 
       setProducts(data);
       setFiltered(data);
-
     } catch (error) {
       console.error(error);
+      alert("Failed to load products.");
     } finally {
       setLoading(false);
     }
@@ -127,11 +133,10 @@ export default function Products() {
           {/* ALL */}
           <button
             onClick={() => filterByCategory(0)}
-            className={`w-full text-left p-2 rounded ${
-              selectedCategoryId === 0
-                ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100"
-            }`}
+            className={`w-full text-left p-2 rounded ${selectedCategoryId === 0
+              ? "bg-blue-500 text-white"
+              : "hover:bg-gray-100"
+              }`}
           >
             All Products
           </button>
@@ -141,11 +146,10 @@ export default function Products() {
             <button
               key={c.Id}
               onClick={() => filterByCategory(c.Id)}
-              className={`w-full text-left p-2 mt-1 rounded ${
-                selectedCategoryId === c.Id
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-100"
-              }`}
+              className={`w-full text-left p-2 mt-1 rounded ${selectedCategoryId === c.Id
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100"
+                }`}
             >
               {c.Name}
             </button>
@@ -155,19 +159,32 @@ export default function Products() {
 
         {/* PRODUCTS */}
         <main className="flex-1 p-4 md:p-6">
-
           {/* LOADING */}
           {loading ? (
             <div className="text-center text-gray-500 p-10">
               Loading products...
             </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="text-6xl mb-4">📦</div>
+
+              <h2 className="text-2xl font-semibold text-gray-700">
+                No Products Available
+              </h2>
+
+              <p className="text-gray-500 mt-2 text-center">
+                There are currently no products to display.
+                <br />
+                Please check back later.
+              </p>
+            </div>
           ) : (
-
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-
               {filtered.map((p) => (
-                <div key={p.Id} className="bg-white shadow rounded p-3">
-
+                <div
+                  key={p.Id}
+                  className="bg-white shadow rounded p-3"
+                >
                   {/* IMAGE */}
                   <img
                     src={
@@ -178,7 +195,9 @@ export default function Products() {
                     alt={p.Name}
                     loading="lazy"
                     className="h-40 w-full object-cover rounded cursor-pointer"
-                    onClick={() => navigate(`/products/${p.Id}`)}
+                    onClick={() =>
+                      navigate(`/products/${p.Id}`)
+                    }
                     onError={(e) => {
                       e.currentTarget.src =
                         "https://via.placeholder.com/300x200?text=No+Image";
@@ -186,7 +205,9 @@ export default function Products() {
                   />
 
                   {/* NAME */}
-                  <h2 className="font-semibold mt-2">{p.Name}</h2>
+                  <h2 className="font-semibold mt-2">
+                    {p.Name}
+                  </h2>
 
                   {/* PRICE */}
                   <p className="text-green-600 font-bold">
@@ -195,7 +216,6 @@ export default function Products() {
 
                   {/* BUTTONS */}
                   <div className="flex gap-2 mt-3">
-
                     <button
                       onClick={() => addToCart(p)}
                       className="flex-1 bg-yellow-500 text-white py-2 rounded"
@@ -212,16 +232,11 @@ export default function Products() {
                     >
                       Buy
                     </button>
-
                   </div>
-
                 </div>
               ))}
-
             </div>
-
           )}
-
         </main>
 
       </div>
