@@ -16,15 +16,19 @@ export default function Payment() {
     0
   );
 
-  const handlePay = () => {
-    localStorage.setItem(
-      "paymentMethod",
+ const handlePay = () => {
+  const cartItems = JSON.parse(localStorage.getItem("cart")) || [];
+  const selectedAddress = JSON.parse(localStorage.getItem("selectedAddress"));
+  const paymentMethod = localStorage.getItem("paymentMethod");
+
+  navigate("/order-summary", {
+    state: {
+      cartItems,
+      selectedAddress,
       paymentMethod
-    );
-
-    navigate("/order-summary");
-  };
-
+    }
+  });
+};
   return (
     <div className="bg-gray-100 min-h-screen pb-28">
       <CustomerNavbar />

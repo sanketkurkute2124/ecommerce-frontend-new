@@ -1,21 +1,66 @@
+import { useLocation, useNavigate } from "react-router-dom";
+import api from "../../api/axiosInstance";
+
 export default function OrderSummary() {
-  const cartItems =
-    JSON.parse(localStorage.getItem("cart")) || [];
+  const { state } = useLocation();
+  const navigate = useNavigate();
 
-  const address =
-    JSON.parse(localStorage.getItem("address")) || {};
+  // ✅ SAFE DATA ACCESS
+  const cartItems = state?.cartItems || [];
+  const address = state?.selectedAddress || {};
+  const paymentMethod = state?.paymentMethod || "COD";
 
-  const paymentMethod =
-    localStorage.getItem("paymentMethod");
+  const customerId = localStorage.getItem("customerId");
 
+  // ✅ TOTAL CALCULATION
   const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.Price * item.quantity,
     0
   );
 
+  /* ---------------- PLACE ORDER API ---------------- */
   const placeOrder = async () => {
-    alert("Order Placed Successfully 🎉");
-    localStorage.removeItem("cart");
+    try {
+      if (!address?.Id) {
+        alert("Address not found!");
+        return;
+      }
+
+      if (cartItems.length === 0) {
+        alert("Cart is empty!");
+        return;
+      }
+
+      const payload = {
+        customerId: Number(customerId),
+        billingAddressId: address.Id,
+        shippingAddressId: address.Id,
+        orderItems: cartItems.map(item => ({
+          productId: item.Id,
+          quantity: item.quantity
+        }))
+      };
+
+      const res = await api.post(
+        "/Orders/CreateOrder",
+        payload
+      );
+
+      console.log("ORDER CREATED:", res.data);
+      console.log("ORDER SUMMARY STATE:", state);
+      // clear cart
+      localStorage.removeItem("cart");
+
+      alert("🎉 Order Placed Successfully!");
+
+      navigate("/success", {
+        state: res.data.data
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("❌ Order failed");
+    }
   };
 
   return (
@@ -35,29 +80,32 @@ export default function OrderSummary() {
             Products
           </h3>
 
-          <div className="space-y-3">
-
-            {cartItems.map((item) => (
+          {cartItems.length === 0 ? (
+            <p className="text-red-500">
+              ❌ No products found
+            </p>
+          ) : (
+            cartItems.map((item) => (
               <div
-                key={item.id}
-                className="flex justify-between items-center border-b pb-2"
+                key={item.Id}
+                className="flex justify-between items-center border-b py-2"
               >
                 <div>
                   <p className="font-medium text-gray-800">
-                    {item.name}
+                    {item.Name}
                   </p>
+
                   <p className="text-sm text-gray-500">
                     Qty: {item.quantity}
                   </p>
                 </div>
 
                 <p className="font-semibold text-green-600">
-                  ₹{item.price * item.quantity}
+                  ₹{item.Price * item.quantity}
                 </p>
               </div>
-            ))}
-
-          </div>
+            ))
+          )}
 
         </div>
 
@@ -68,10 +116,16 @@ export default function OrderSummary() {
             Delivery Address
           </h3>
 
-          <p className="text-gray-700 leading-relaxed">
-            {address.addressLine1}, {address.city},{" "}
-            {address.state} - {address.pincode}
-          </p>
+          {address?.AddressLine1 ? (
+            <p className="text-gray-700">
+              {address.AddressLine1}, {address.AddressLine2},{" "}
+              {address.City}, {address.State} - {address.PostalCode}
+            </p>
+          ) : (
+            <p className="text-red-500">
+              ❌ No address selected
+            </p>
+          )}
 
         </div>
 
@@ -92,7 +146,10 @@ export default function OrderSummary() {
         <div className="bg-white p-5 rounded-xl shadow flex justify-between items-center">
 
           <div>
-            <p className="text-gray-500">Total Amount</p>
+            <p className="text-gray-500">
+              Total Amount
+            </p>
+
             <h3 className="text-2xl font-bold text-green-600">
               ₹{total}
             </h3>
