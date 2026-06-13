@@ -24,6 +24,7 @@ export default function Orders() {
       const response = await axiosInstance.get(
         "/Orders/GetAllOrders"
       );
+      console.log("Orders loaded:", response.data);
 
       setOrders(response.data.Data || []);
     } catch (error) {
@@ -47,6 +48,7 @@ export default function Orders() {
               <TableHead>Status</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Total Amount</TableHead>
+              <TableHead>Details</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -70,13 +72,12 @@ export default function Orders() {
 
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded text-white ${
-                        order.OrderStatus === "Pending"
+                      className={`px-2 py-1 rounded text-white ${order.OrderStatus === "Pending"
                           ? "bg-yellow-500"
                           : order.OrderStatus === "Completed"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }`}
                     >
                       {order.OrderStatus}
                     </span>
@@ -89,12 +90,30 @@ export default function Orders() {
                   <TableCell>
                     ₹{order.TotalAmount}
                   </TableCell>
+                  <TableCell>
+                    {order.OrderItems?.length > 0 ? (
+                      order.OrderItems.map((item) => (
+                        <div key={item.Id} className="mb-2">
+                          <p className="font-semibold">
+                            {item.ProductName}
+                          </p>
+
+                          <p className="text-sm text-gray-500">
+                            Quantity: {item.Quantity} | Price: ₹{item.Price}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <span>No Items</span>
+                    )}
+                  </TableCell>
                 </TableRow>
+
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center"
                 >
                   No Orders Found

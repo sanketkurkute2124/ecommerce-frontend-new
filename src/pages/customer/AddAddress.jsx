@@ -1,279 +1,8 @@
-// import { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import api from "../../api/axiosInstance";
-// import CustomerNavbar from "./CustomerNavbar";
-
-// export default function Address() {
-//   const navigate = useNavigate();
-
-//   const [addresses, setAddresses] = useState([]);
-//   const [selectedAddressId, setSelectedAddressId] = useState(null);
-//   const [showForm, setShowForm] = useState(false);
-
-//   const [formData, setFormData] = useState({
-//     AddressLine1: "",
-//     AddressLine2: "",
-//     City: "",
-//     State: "",
-//     PostalCode: "",
-//     Country: "IN",
-//   });
-
-//   useEffect(() => {
-//     const token = localStorage.getItem("token");
-
-//     if (!token) {
-//       navigate("/login");
-//       return;
-//     }
-
-//     loadAddresses();
-//   }, []);
-
-//   const loadAddresses = async () => {
-//     try {
-//       const customerId =
-//         localStorage.getItem("customerId");
-
-//       const res = await api.get(
-//         `/Addresses/GetAddressesByCustomer/${customerId}`
-//       );
-
-//       const data = res.data.Data || [];
-
-//       setAddresses(data);
-
-//       if (data.length > 0) {
-//         setSelectedAddressId(data[0].Id);
-//       } else {
-//         setShowForm(true);
-//       }
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   };
-
-//   const handleChange = (e) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value,
-//     });
-//   };
-
-//   const saveAddress = async (e) => {
-//     e.preventDefault();
-
-//     try {
-//       const customerId =
-//         localStorage.getItem("customerId");
-
-//       const payload = {
-//         CustomerId: Number(customerId),
-//         ...formData,
-//       };
-
-//       const res = await api.post(
-//         "/Addresses/CreateAddress",
-//         payload
-//       );
-
-//       if (res.data.Success) {
-//         await loadAddresses();
-//         setShowForm(false);
-
-//         setFormData({
-//           AddressLine1: "",
-//           AddressLine2: "",
-//           City: "",
-//           State: "",
-//           PostalCode: "",
-//           Country: "IN",
-//         });
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       alert("Failed to save address");
-//     }
-//   };
-
-//   const continueToPayment = () => {
-//     const selectedAddress = addresses.find(
-//       (x) => x.Id === Number(selectedAddressId)
-//     );
-
-//     if (!selectedAddress) {
-//       alert("Please select an address");
-//       return;
-//     }
-
-//     localStorage.setItem(
-//       "selectedAddress",
-//       JSON.stringify(selectedAddress)
-//     );
-
-//     navigate("/payment");
-//   };
-
-//   return (
-//     <div className="bg-gray-100 min-h-screen">
-//       <CustomerNavbar />
-
-//       <div className="max-w-4xl mx-auto p-4">
-
-//         <h1 className="text-2xl font-bold mb-4">
-//           Delivery Address
-//         </h1>
-
-//         {addresses.length > 0 && (
-//           <>
-//             <div className="space-y-4">
-
-//               {addresses.map((address) => (
-//                 <label
-//                   key={address.Id}
-//                   className="block bg-white p-4 rounded-lg shadow cursor-pointer border"
-//                 >
-//                   <div className="flex gap-3">
-
-//                     <input
-//                       type="radio"
-//                       name="address"
-//                       checked={
-//                         selectedAddressId === address.Id
-//                       }
-//                       onChange={() =>
-//                         setSelectedAddressId(address.Id)
-//                       }
-//                     />
-
-//                     <div>
-//                       <p className="font-semibold">
-//                         {address.AddressLine1}
-//                       </p>
-
-//                       <p>
-//                         {address.AddressLine2}
-//                       </p>
-
-//                       <p>
-//                         {address.City}, {address.State}
-//                       </p>
-
-//                       <p>
-//                         {address.PostalCode}
-//                       </p>
-
-//                       <p>
-//                         {address.Country}
-//                       </p>
-//                     </div>
-
-//                   </div>
-//                 </label>
-//               ))}
-
-//             </div>
-
-//             <button
-//               onClick={() => setShowForm(true)}
-//               className="mt-4 text-blue-600 font-semibold"
-//             >
-//               + Add New Address
-//             </button>
-
-//             <div className="mt-6">
-//               <button
-//                 onClick={continueToPayment}
-//                 className="bg-pink-600 text-white px-8 py-3 rounded-lg"
-//               >
-//                 Deliver Here
-//               </button>
-//             </div>
-//           </>
-//         )}
-
-//         {showForm && (
-//           <div className="bg-white mt-6 p-4 rounded-lg shadow">
-
-//             <h2 className="text-xl font-bold mb-4">
-//               Add Address
-//             </h2>
-
-//             <form
-//               onSubmit={saveAddress}
-//               className="space-y-3"
-//             >
-//               <input
-//                 type="text"
-//                 name="AddressLine1"
-//                 placeholder="Address Line 1"
-//                 value={formData.AddressLine1}
-//                 onChange={handleChange}
-//                 className="w-full border p-2 rounded"
-//                 required
-//               />
-
-//               <input
-//                 type="text"
-//                 name="AddressLine2"
-//                 placeholder="Address Line 2"
-//                 value={formData.AddressLine2}
-//                 onChange={handleChange}
-//                 className="w-full border p-2 rounded"
-//               />
-
-//               <input
-//                 type="text"
-//                 name="City"
-//                 placeholder="City"
-//                 value={formData.City}
-//                 onChange={handleChange}
-//                 className="w-full border p-2 rounded"
-//                 required
-//               />
-
-//               <input
-//                 type="text"
-//                 name="State"
-//                 placeholder="State"
-//                 value={formData.State}
-//                 onChange={handleChange}
-//                 className="w-full border p-2 rounded"
-//                 required
-//               />
-
-//               <input
-//                 type="text"
-//                 name="PostalCode"
-//                 placeholder="Postal Code"
-//                 value={formData.PostalCode}
-//                 onChange={handleChange}
-//                 className="w-full border p-2 rounded"
-//                 required
-//               />
-
-//               <button
-//                 type="submit"
-//                 className="bg-green-600 text-white px-6 py-2 rounded"
-//               >
-//                 Save Address
-//               </button>
-
-//             </form>
-
-//           </div>
-//         )}
-
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axiosInstance";
 import CustomerNavbar from "./CustomerNavbar";
+import { Edit } from "lucide-react";
 
 export default function AddAddress() {
   const navigate = useNavigate();
@@ -283,6 +12,8 @@ export default function AddAddress() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showEditDrawer, setShowEditDrawer] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
 
   const [formData, setFormData] = useState({
     AddressLine1: "",
@@ -304,7 +35,99 @@ export default function AddAddress() {
 
     loadAddresses();
   }, []);
+  const handleDelete = async (addressId) => {
+    if (!window.confirm("Delete this address?")) return;
 
+    try {
+      const customerId = localStorage.getItem("customerId");
+
+      const response = await api.delete(
+        "/Addresses/DeleteAddress",
+        {
+          data: {
+            CustomerId: Number(customerId),
+            AddressId: addressId,
+          },
+        }
+      );
+
+      if (response.data.Success) {
+        alert("Address deleted successfully");
+
+        setAddresses((prev) =>
+          prev.filter((address) => address.Id !== addressId)
+        );
+
+        if (selectedAddressId === addressId) {
+          const remaining = addresses.filter(
+            (address) => address.Id !== addressId
+          );
+
+          setSelectedAddressId(
+            remaining.length > 0 ? remaining[0].Id : null
+          );
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete address");
+    }
+  };
+
+  const handleEdit = (address) => {
+    setEditingAddressId(address.Id);
+
+    setFormData({
+      AddressLine1: address.AddressLine1,
+      AddressLine2: address.AddressLine2 || "",
+      City: address.City,
+      State: address.State,
+      PostalCode: address.PostalCode,
+      Country: address.Country,
+    });
+
+    setShowEditDrawer(true);
+  };
+
+  const updateAddress = async (e) => {
+    e.preventDefault();
+
+    try {
+      const customerId = localStorage.getItem("customerId");
+
+      const payload = {
+        AddressId: editingAddressId,
+        CustomerId: Number(customerId),
+        ...formData,
+      };
+      console.log("Update Payload:", payload);
+
+      const response = await api.put(
+        "/Addresses/UpdateAddress",
+        payload
+      );
+
+      if (response.data.Success) {
+        alert("Address updated successfully");
+
+        setShowEditDrawer(false);
+
+        setFormData({
+          AddressLine1: "",
+          AddressLine2: "",
+          City: "",
+          State: "",
+          PostalCode: "",
+          Country: "IN",
+        });
+
+        loadAddresses();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update address");
+    }
+  };
   const loadAddresses = async () => {
     try {
       setLoading(true);
@@ -391,7 +214,7 @@ export default function AddAddress() {
 
       alert(
         err.response?.data?.Errors?.join(", ") ||
-          "Failed to save address."
+        "Failed to save address."
       );
     }
   };
@@ -448,11 +271,10 @@ export default function AddAddress() {
                 {addresses.map((address) => (
                   <label
                     key={address.Id}
-                    className={`block bg-white p-4 rounded-lg shadow cursor-pointer border ${
-                      selectedAddressId === address.Id
-                        ? "border-pink-600"
-                        : "border-gray-200"
-                    }`}
+                    className={`block bg-white p-4 rounded-lg shadow cursor-pointer border ${selectedAddressId === address.Id
+                      ? "border-pink-600"
+                      : "border-gray-200"
+                      }`}
                   >
                     <div className="flex gap-3">
 
@@ -487,8 +309,33 @@ export default function AddAddress() {
                         <p>
                           {address.Country}
                         </p>
-                      </div>
+                        <div>
 
+                        </div>
+                      </div>
+                      <div className="ml-auto flex items-start gap-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleEdit(address);
+                          }}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <Edit size={20} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDelete(address.Id);
+                          }}
+                          className="text-red-600 hover:text-red-800 font-bold text-xl"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
                   </label>
                 ))}
@@ -627,7 +474,102 @@ export default function AddAddress() {
 
           </div>
         )}
+        {showEditDrawer && (
+          <>
+            {/* Overlay */}
+            <div
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => setShowEditDrawer(false)}
+            />
 
+            {/* Drawer */}
+            <div className="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white z-50 shadow-xl overflow-y-auto">
+              <div className="flex items-center justify-between p-5 border-b">
+                <h2 className="text-xl font-bold">
+                  Edit Address
+                </h2>
+
+                <button
+                  onClick={() => setShowEditDrawer(false)}
+                  className="text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form
+                onSubmit={updateAddress}
+                className="p-5 space-y-4"
+              >
+                <input
+                  type="text"
+                  name="AddressLine1"
+                  placeholder="Address Line 1"
+                  value={formData.AddressLine1}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded"
+                  required
+                />
+
+                <input
+                  type="text"
+                  name="AddressLine2"
+                  placeholder="Address Line 2"
+                  value={formData.AddressLine2}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded"
+                />
+
+                <input
+                  type="text"
+                  name="City"
+                  placeholder="City"
+                  value={formData.City}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded"
+                  required
+                />
+
+                <input
+                  type="text"
+                  name="State"
+                  placeholder="State"
+                  value={formData.State}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded"
+                  required
+                />
+
+                <input
+                  type="text"
+                  name="PostalCode"
+                  placeholder="Postal Code"
+                  value={formData.PostalCode}
+                  onChange={handleChange}
+                  className="w-full border p-3 rounded"
+                  required
+                />
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-pink-600 text-white py-3 rounded-lg"
+                  >
+                    Update Address
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowEditDrawer(false)}
+                    className="flex-1 border border-gray-300 py-3 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
