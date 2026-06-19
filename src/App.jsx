@@ -24,7 +24,8 @@ import AddAddress from "./pages/customer/AddAddress";
 import Payment from "./pages/customer/Payment";
 import OrderSummary from "./pages/customer/OrderSummary";
 import Success from "./pages/customer/Success";
-
+import MyOrders from "./pages/customer/MyOrders";
+import OrderDetails from "./pages/customer/OrderDetails";
 function App() {
   return (
     <BrowserRouter>
@@ -45,9 +46,12 @@ function App() {
         <Route path="/address" element={<AddAddress />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/order-summary" element={<OrderSummary />} />
+        <Route path="/order-details/:id" element={<OrderDetails />} />  
+  
 
         {/* ✅ SUCCESS PAGE (FIXED) */}
         <Route path="/success" element={<Success />} />
+        <Route path="/my-orders" element={<MyOrders />} />
 
         {/* ADMIN */}
         <Route path="/admin" element={<AdminLayout />}>

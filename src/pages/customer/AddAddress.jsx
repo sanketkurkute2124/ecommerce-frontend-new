@@ -35,45 +35,6 @@ export default function AddAddress() {
 
     loadAddresses();
   }, []);
-  const handleDelete = async (addressId) => {
-    if (!window.confirm("Delete this address?")) return;
-
-    try {
-      const customerId = localStorage.getItem("customerId");
-
-      const response = await api.delete(
-        "/Addresses/DeleteAddress",
-        {
-          data: {
-            CustomerId: Number(customerId),
-            AddressId: addressId,
-          },
-        }
-      );
-
-      if (response.data.Success) {
-        alert("Address deleted successfully");
-
-        setAddresses((prev) =>
-          prev.filter((address) => address.Id !== addressId)
-        );
-
-        if (selectedAddressId === addressId) {
-          const remaining = addresses.filter(
-            (address) => address.Id !== addressId
-          );
-
-          setSelectedAddressId(
-            remaining.length > 0 ? remaining[0].Id : null
-          );
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete address");
-    }
-  };
-
   const handleEdit = (address) => {
     setEditingAddressId(address.Id);
 
@@ -325,16 +286,7 @@ export default function AddAddress() {
                           <Edit size={20} />
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDelete(address.Id);
-                          }}
-                          className="text-red-600 hover:text-red-800 font-bold text-xl"
-                        >
-                          ✕
-                        </button>
+
                       </div>
                     </div>
                   </label>

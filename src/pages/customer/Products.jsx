@@ -1,93 +1,100 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axiosInstance";
+
 import CustomerNavbar from "./CustomerNavbar";
+import { useProducts } from "../../hooks/useProducts";
+import { useCategories } from "../../hooks/useCategories";
+
+const BASE_URL =
+  "https://ecommerce-backend-oq9d.onrender.com";
 
 export default function Products() {
-  const [products, setProducts] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [categories, setCategories] = useState([]);
-
-  const [selectedCategoryId, setSelectedCategoryId] = useState(0);
-  const [openSidebar, setOpenSidebar] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-  }, []);
+  const [selectedCategoryId, setSelectedCategoryId] =
+    useState(0);
 
-  /* ---------------- API ---------------- */
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
+  const [openSidebar, setOpenSidebar] =
+    useState(false);
 
-      const res = await api.get(
-        "/Product/GetAllProducts"
-      );
+  const {
+    data: products = [],
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useProducts();
 
-      const data =
-        res.data?.Data?.filter(
-          (p) => p.IsAvailable === true
-        ) || [];
+  const {
+    data: categories = [],
+    isLoading: categoriesLoading,
+  } = useCategories();
 
-      setProducts(data);
-      setFiltered(data);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to load products.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading =
+    productsLoading || categoriesLoading;
 
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get("/Categories/GetAllCategories");
-      setCategories(res.data?.Data || []);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const filteredProducts = useMemo(() => {
+    if (selectedCategoryId === 0)
+      return products;
 
-  /* ---------------- FILTER ---------------- */
-  const filterByCategory = (id) => {
-    setSelectedCategoryId(id);
+    return products.filter(
+      (p) => p.CategoryId === selectedCategoryId
+    );
+  }, [products, selectedCategoryId]);
 
-    if (id === 0) {
-      setFiltered(products);
-    } else {
-      setFiltered(products.filter(p => p.CategoryId === id));
-    }
-
-    setOpenSidebar(false);
-  };
-
-  /* ---------------- ADD TO CART ---------------- */
   const addToCart = (product) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cart =
+      JSON.parse(localStorage.getItem("cart")) || [];
 
-    const existing = cart.find((item) => item.Id === product.Id);
+    const existing = cart.find(
+      (item) => item.Id === product.Id
+    );
 
     if (existing) {
-      existing.quantity = (existing.quantity || 1) + 1;
+      existing.quantity =
+        (existing.quantity || 1) + 1;
     } else {
-      cart.push({ ...product, quantity: 1 });
+      cart.push({
+        ...product,
+        quantity: 1,
+      });
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
+    localStorage.setItem(
+      "cart",
+      JSON.stringify(cart)
+    );
+
+    window.dispatchEvent(
+      new Event("cartUpdated")
+    );
   };
+
+  if (loading) {
+    return (
+      <>
+        <CustomerNavbar />
+        <div className="text-center p-10">
+          Loading products...
+        </div>
+      </>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <>
+        <CustomerNavbar />
+        <div className="text-center text-red-500 p-10">
+          Failed to load products.
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
-
-      {/* NAVBAR */}
       <CustomerNavbar />
 
-      {/* MOBILE HEADER */}
+      {/* Mobile Header */}
       <div className="md:hidden flex justify-between items-center p-3 bg-white shadow">
         <h1 className="font-bold">Products</h1>
 
@@ -100,8 +107,6 @@ export default function Products() {
       </div>
 
       <div className="flex">
-
-        {/* BACKDROP */}
         {openSidebar && (
           <div
             className="fixed inset-0 bg-black/40 z-40 md:hidden"
@@ -109,18 +114,23 @@ export default function Products() {
           />
         )}
 
-        {/* SIDEBAR */}
+        {/* Sidebar */}
         <aside
           className={`
             fixed md:static top-0 left-0 h-full w-64 bg-white shadow p-4 z-50
             transform transition-transform duration-300
-            ${openSidebar ? "translate-x-0" : "-translate-x-full"}
+            ${
+              openSidebar
+                ? "translate-x-0"
+                : "-translate-x-full"
+            }
             md:translate-x-0
           `}
         >
-
           <div className="flex justify-between md:hidden mb-3">
-            <h2 className="font-bold">Categories</h2>
+            <h2 className="font-bold">
+              Categories
+            </h2>
 
             <button
               onClick={() => setOpenSidebar(false)}
@@ -130,94 +140,94 @@ export default function Products() {
             </button>
           </div>
 
-          {/* ALL */}
           <button
-            onClick={() => filterByCategory(0)}
-            className={`w-full text-left p-2 rounded ${selectedCategoryId === 0
-              ? "bg-blue-500 text-white"
-              : "hover:bg-gray-100"
-              }`}
+            onClick={() =>
+              setSelectedCategoryId(0)
+            }
+            className={`w-full text-left p-2 rounded ${
+              selectedCategoryId === 0
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100"
+            }`}
           >
             All Products
           </button>
 
-          {/* CATEGORY LIST */}
           {categories.map((c) => (
             <button
               key={c.Id}
-              onClick={() => filterByCategory(c.Id)}
-              className={`w-full text-left p-2 mt-1 rounded ${selectedCategoryId === c.Id
-                ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100"
-                }`}
+              onClick={() => {
+                setSelectedCategoryId(c.Id);
+                setOpenSidebar(false);
+              }}
+              className={`w-full text-left p-2 mt-1 rounded ${
+                selectedCategoryId === c.Id
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-100"
+              }`}
             >
               {c.Name}
             </button>
           ))}
-
         </aside>
 
-        {/* PRODUCTS */}
+        {/* Products */}
         <main className="flex-1 p-4 md:p-6">
-          {/* LOADING */}
-          {loading ? (
-            <div className="text-center text-gray-500 p-10">
-              Loading products...
-            </div>
-          ) : filtered.length === 0 ? (
+          {filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="text-6xl mb-4">📦</div>
+              <div className="text-6xl mb-4">
+                📦
+              </div>
 
               <h2 className="text-2xl font-semibold text-gray-700">
                 No Products Available
               </h2>
 
               <p className="text-gray-500 mt-2 text-center">
-                There are currently no products to display.
-                <br />
                 Please check back later.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {filtered.map((p) => (
+              {filteredProducts.map((p) => (
                 <div
                   key={p.Id}
                   className="bg-white shadow rounded p-3"
                 >
-                  {/* IMAGE */}
                   <img
                     src={
                       p.ImageUrl?.startsWith("http")
                         ? p.ImageUrl
-                        : `https://ecommerce-backend-oq9d.onrender.com${p.ImageUrl}`
+                        : `${BASE_URL}${p.ImageUrl}`
                     }
                     alt={p.Name}
                     loading="lazy"
                     className="h-40 w-full object-cover rounded cursor-pointer"
                     onClick={() =>
-                      navigate(`/products/${p.Id}`)
+                      navigate(
+                        `/products/${p.Id}`
+                      )
                     }
                     onError={(e) => {
+                      e.target.onerror = null; 
                       e.currentTarget.src =
                         "https://via.placeholder.com/300x200?text=No+Image";
                     }}
                   />
 
-                  {/* NAME */}
                   <h2 className="font-semibold mt-2">
                     {p.Name}
                   </h2>
 
-                  {/* PRICE */}
                   <p className="text-green-600 font-bold">
                     ₹{p.Price}
                   </p>
 
-                  {/* BUTTONS */}
                   <div className="flex gap-2 mt-3">
                     <button
-                      onClick={() => addToCart(p)}
+                      onClick={() =>
+                        addToCart(p)
+                      }
                       className="flex-1 bg-yellow-500 text-white py-2 rounded"
                     >
                       Add
@@ -238,7 +248,6 @@ export default function Products() {
             </div>
           )}
         </main>
-
       </div>
     </div>
   );
