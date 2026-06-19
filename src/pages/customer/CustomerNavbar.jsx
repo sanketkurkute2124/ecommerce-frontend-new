@@ -208,14 +208,11 @@ export default function CustomerNavbar() {
             )}
           </button>
 
-          {/* User */}
           {customerName ? (
             <div className="flex items-center gap-2">
-
               <div className="flex items-center gap-1 text-gray-700">
                 <User size={18} />
-
-                <span className="hidden md:inline text-sm">
+                <span className="text-xs sm:text-sm max-w-[80px] truncate">
                   {customerName}
                 </span>
               </div>
@@ -226,7 +223,6 @@ export default function CustomerNavbar() {
               >
                 Logout
               </button>
-
             </div>
           ) : (
             <Link
