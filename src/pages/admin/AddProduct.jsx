@@ -59,60 +59,60 @@ export default function AddProduct() {
       // stockQuantity: Yup.number().required("Stock Quantity is required"),
       // categoryId: Yup.number().required("Category is required"),
       name: Yup.string()
-    .required("Product Name is required")
-    .min(
-      3,
-      "Product Name must be at least 3 characters"
-    )
-    .max(
-      100,
-      "Product Name cannot exceed 100 characters"
-    ),
+        .required("Product Name is required")
+        .min(
+          3,
+          "Product Name must be at least 3 characters"
+        )
+        .max(
+          100,
+          "Product Name cannot exceed 100 characters"
+        ),
 
-  description: Yup.string()
-    .required("Description is required")
-    .min(
-      10,
-      "Description must be at least 10 characters"
-    ),
+      description: Yup.string()
+        .required("Description is required")
+        .min(
+          10,
+          "Description must be at least 10 characters"
+        ),
 
-  price: Yup.number()
-    .required("Price is required")
-    .min(
-      0.01,
-      "Price must be greater than 0"
-    )
-    .max(
-      10000,
-      "Price cannot exceed 10000"
-    ),
+      price: Yup.number()
+        .required("Price is required")
+        .min(
+          0.01,
+          "Price must be greater than 0"
+        )
+        .max(
+          10000,
+          "Price cannot exceed 10000"
+        ),
 
-  stockQuantity: Yup.number()
-    .required(
-      "Stock Quantity is required"
-    )
-    .min(
-      0,
-      "Stock Quantity cannot be negative"
-    )
-    .max(
-      1000,
-      "Stock Quantity cannot exceed 1000"
-    ),
+      stockQuantity: Yup.number()
+        .required(
+          "Stock Quantity is required"
+        )
+        .min(
+          0,
+          "Stock Quantity cannot be negative"
+        )
+        .max(
+          1000,
+          "Stock Quantity cannot exceed 1000"
+        ),
 
-  discountPercentage: Yup.number()
-    .min(
-      0,
-      "Discount Percentage cannot be negative"
-    )
-    .max(
-      100,
-      "Discount Percentage cannot exceed 100"
-    ),
+      discountPercentage: Yup.number()
+        .min(
+          0,
+          "Discount Percentage cannot be negative"
+        )
+        .max(
+          100,
+          "Discount Percentage cannot exceed 100"
+        ),
 
-  categoryId: Yup.number().required(
-    "Category is required"
-  ),
+      categoryId: Yup.number().required(
+        "Category is required"
+      ),
     }),
 
     onSubmit: async (values, { resetForm }) => {
@@ -120,52 +120,51 @@ export default function AddProduct() {
         const formData = new FormData();
 
         formData.append("Name", values.name);
-        formData.append(
-          "Description",
-          values.description
-        );
-        formData.append(
-          "Price",
-          values.price
-        );
-        formData.append(
-          "StockQuantity",
-          values.stockQuantity
-        );
+        formData.append("Description", values.description);
+        formData.append("Price", values.price);
+        formData.append("StockQuantity", values.stockQuantity);
         formData.append(
           "DiscountPercentage",
           values.discountPercentage || 0
         );
+        formData.append("CategoryId", values.categoryId);
         formData.append(
-          "CategoryId",
-          values.categoryId
+          "IsAvailable",
+          values.isAvailable
         );
 
         if (image) {
           formData.append("Image", image);
         }
 
-        await axiosInstance.post(
+        const response = await axiosInstance.post(
           "/Product/CreateProduct",
           formData,
           {
             headers: {
-              "Content-Type":
-                "multipart/form-data",
+              "Content-Type": "multipart/form-data",
             },
           }
         );
-        // console.log(response.data);
+
+        console.log(response.data);
 
         alert("Product Added Successfully");
 
         resetForm();
+        setImage(null);
+
+        // Clear file input
+        document.querySelector(
+          'input[type="file"]'
+        ).value = "";
       } catch (error) {
         console.error(error);
 
         if (error.response) {
-          console.log(error.response.data);
-          alert(JSON.stringify(error.response.data));
+          alert(
+            JSON.stringify(error.response.data)
+          );
         } else {
           alert(error.message);
         }
